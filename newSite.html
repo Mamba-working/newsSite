@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="js/jquery.js"></script>
+    <style>
+        * {
+            margin: 0%;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s
+        }
+
+        .waterFall {
+            margin: 0 auto;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0 auto
+        }
+
+        ul::after {
+            display: block;
+            content: '';
+            clear: both;
+        }
+
+        ul>li {
+            border: 1px rgb(119, 115, 113) solid;
+            float: left;
+            padding: 10px;
+            width: 280px;
+            position: absolute;
+        }
+       ul>li img{
+           width:260px;
+           
+       }
+        ul>li>h4 {
+            border-bottom: 1px solid rgb(119, 115, 113);
+        }
+
+        ul>li>.desp {
+            color: rgb(119, 115, 113)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="waterFall">
+        <ul class="news">
+        
+
+        </ul>
+    </div>
+
+    </li>
+    <script>
+        let waterFall = {
+            init() {
+                this.liWidth = $(".news li").outerWidth(true)
+                this.coluCount = Math.floor($(".waterFall").width() / this.liWidth)
+                this.coluArr = []
+                for (let i = 0; i < this.coluCount; i++) {
+                    this.coluArr.push(0)
+                }
+                this.bind();
+                
+            },
+            bind: function () {
+                let _this = this;
+                $('.item').find("img").on("load",function(){
+                    _this.layout($(this).parents("li"))
+                    console.log("load")
+                })
+
+                $(window).on("resize", function () {
+                    let timer = null;
+                    clearTimeout(timer);
+                    setTimeout(function () {
+                        _this.coluCount = Math.floor($(".waterFall").width() / _this.liWidth)
+                        _this.coluArr = []
+                        for (let i = 0; i < _this.coluCount; i++) {
+                            _this.coluArr.push(0)
+                        }
+                        $(".news li").each(function () {
+                            _this.layout($(this))
+                        })
+                    }, 500)
+
+                })
+            },
+            layout: function ($node) {
+                let minIndex = this.min(this.coluArr);
+                let minValue = this.coluArr[minIndex];
+                $node.css({
+                    top: minValue,
+                    left: minIndex * this.liWidth
+                })
+                this.coluArr[minIndex] += $node.outerHeight(true)
+
+            },
+            min: function (arr) {
+                let minValue = arr[0];
+                let minIndex = 0;
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] < minValue) {
+                        minValue = arr[i];
+                        minIndex = i;
+                    }
+                }
+                return minIndex
+            }
+        }
+        waterFall.init()
+    </script>
+</body>
+
+</html>
