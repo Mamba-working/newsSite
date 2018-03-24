@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="css/font.css">
     <script src="js/jquery.js"></script>
     <style>
         * {
@@ -20,7 +21,8 @@
 
         ul {
             list-style: none;
-            margin: 0 auto
+            margin: 0 auto;
+            position: relative;
         }
 
         ul::after {
@@ -30,16 +32,19 @@
         }
 
         ul>li {
-            border: 1px rgb(119, 115, 113) solid;
+            border: 1px solid #DFDFDF;
             float: left;
             padding: 10px;
             width: 280px;
             position: absolute;
+            margin: 5px;
         }
-       ul>li img{
-           width:260px;
-           
-       }
+
+        ul>li img {
+            width: 260px;
+
+        }
+
         ul>li>h4 {
             border-bottom: 1px solid rgb(119, 115, 113);
         }
@@ -47,15 +52,47 @@
         ul>li>.desp {
             color: rgb(119, 115, 113)
         }
+
+        .waterFall>div {
+            text-align: center;
+        }
+
+        div .iconfont {
+            display: inline-block;
+            animation: 1s rotate linear infinite;
+            font-size: 32px;
+        }
+
+        .waterFall>span {
+            display: none;
+            font-size: 32px;
+            color: #888;
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg)
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="waterFall">
         <ul class="news">
-        
-
+            <li class="item" style="border:none"></li>
         </ul>
+        <div>
+            <i class="iconfont icon-load"></i>
+        </div>
+        <span class="noMore">
+            没有更多
+        </span>
     </div>
 
     </li>
@@ -69,14 +106,15 @@
                     this.coluArr.push(0)
                 }
                 this.bind();
-                
             },
             bind: function () {
                 let _this = this;
-                $('.item').find("img").on("load",function(){
-                    _this.layout($(this).parents("li"))
-                    console.log("load")
-                })
+                // $('.item').find("img").on("load", function () {
+                //     $(".news li").each(function () {
+                //         _this.layout($(this))
+                //     })
+
+                // })
 
                 $(window).on("resize", function () {
                     let timer = null;
@@ -95,28 +133,131 @@
                 })
             },
             layout: function ($node) {
-                let minIndex = this.min(this.coluArr);
+                let minIndex = this.min(this.coluArr).minIndex;
+                let maxValue = this.min(this.coluArr).maxValue;
                 let minValue = this.coluArr[minIndex];
                 $node.css({
                     top: minValue,
                     left: minIndex * this.liWidth
                 })
+
+                $("ul").css("height", maxValue)
                 this.coluArr[minIndex] += $node.outerHeight(true)
 
             },
             min: function (arr) {
                 let minValue = arr[0];
                 let minIndex = 0;
+                let maxValue = arr[0];
+                let maxIndex = 0;
                 for (let i = 0; i < arr.length; i++) {
                     if (arr[i] < minValue) {
                         minValue = arr[i];
                         minIndex = i;
                     }
                 }
-                return minIndex
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] > minValue) {
+                        maxValue = arr[i];
+                        maxIndex = i;
+                    }
+                }
+                return {
+                    minIndex,
+                    maxValue
+                }
             }
         }
-        waterFall.init()
+        let getData = {
+            init: function () {
+                this.count = 20;
+                this.currentPage = 0;
+                this.total = 41;
+                this.finish = false;
+                this.bind()
+                waterFall.init()
+            },
+            bind() {
+                this.get();
+                this.lazyLoad()
+            },
+            get() {
+                if ($("li").length <= this.total) {
+                    let _this = this
+                    $.ajax({
+                        url: "http://platform.sina.com.cn/slide/album_tech",
+                        dataType: 'jsonp',
+                        jsonp: "jsoncallback",
+                        data: {
+                            app_key: '1271687855',
+                            num: _this.count,
+                            page: _this.currentPage
+                        }
+                    }).done(function (ret) {
+                        ret.data.forEach(function (node) {
+                            _this.render(node)
+                        })
+                        _this.currentPage++;
+                        $(".waterFall>div").hide("slow");
+                        console.log("ajax")
+                    }).fail(function () {
+                        console.log("fail")
+                    })
+                } else {
+                    console.log($("li").length);
+                    this.finish = true;
+                    $(".waterFall>div").hide("slow");
+                    $(".noMore").fadeIn();
+                    $(".noMore").css({
+                        display:'block',
+                        margin:'0 auto'
+                    })
+                    $("ul").css("height", waterFall.min(waterFall.coluArr).maxValue)
+                }
+
+
+            },
+            render(arr) {
+                let template =
+                    `
+                <li class="item" "> 
+                  <a href="#" class="link">
+                    <img src="" alt="">
+                  </a> 
+                  <h4 class="header"></h4>
+                  <p class="desp"></p>
+                </li>
+                `
+                let $node = $(template);
+                $node.find("img").attr("src", arr.img_url);
+                $node.find("h4").text(arr.short_name);
+                $node.find("p").text(arr.short_intro);
+                $("ul.news").append($node);
+                $(window).resize()
+            },
+            lazyLoad() {
+                let timer = null;
+                let _this = this
+                $(window).on("scroll", function () {
+                    clearTimeout(timer);
+                    if ($("ul")[0].scrollHeight <= $(window).scrollTop() + $(window).height()) {
+                        timer = setTimeout(function () {
+                            console.log("scroll")
+                            if (_this.finish === false) {
+                                $(".waterFall>div").fadeIn();
+                                _this.get();
+                            }else{
+                                console.log("over")
+                            }
+
+
+                        }, 500)
+                    }
+                })
+            },
+
+        }
+        getData.init()
     </script>
 </body>
 
