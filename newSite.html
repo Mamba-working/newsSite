@@ -236,7 +236,8 @@
                 $node.find("h4").text(node.short_name);
                 $node.find("p").text(node.short_intro);
                 $("ul.news").append($node);
-               waterFall.layout($node)
+               waterFall.layout($node)；
+               $(window).resize();
             },
             lazyLoad() {
                 let timer = null;
