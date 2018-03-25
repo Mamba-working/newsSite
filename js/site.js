@@ -144,7 +144,7 @@ let getData = {
         let _this = this
         $(window).on("scroll", function () {
             clearTimeout(timer);
-            if ($("ul")[0].scrollHeight-10 <= $(window).scrollTop() + $(window).height()) {
+            if ($("ul")[0].scrollHeight-50 <= $(window).scrollTop() + $(window).height()) {
                 timer = setTimeout(function () {
                     console.log("scroll")
                     if (_this.finish === false) {
