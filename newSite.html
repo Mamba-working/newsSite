@@ -158,7 +158,7 @@
                     }
                 }
                 for (let i = 0; i < arr.length; i++) {
-                    if (arr[i] > minValue) {
+                    if (arr[i] > maxValue) {
                         maxValue = arr[i];
                         maxIndex = i;
                     }
@@ -175,8 +175,9 @@
                 this.currentPage = 0;
                 this.total = 41;
                 this.finish = false;
-                this.bind()
                 waterFall.init()
+                this.bind()
+                
             },
             bind() {
                 this.get();
@@ -205,7 +206,6 @@
                         console.log("fail")
                     })
                 } else {
-                    console.log($("li").length);
                     this.finish = true;
                     $(".waterFall>div").hide("slow");
                     $(".noMore").fadeIn();
@@ -214,11 +214,13 @@
                         margin:'0 auto'
                     })
                     $("ul").css("height", waterFall.min(waterFall.coluArr).maxValue)
+                    console.log(waterFall.min(waterFall.coluArr).maxValue)
+                    console.log(waterFall.coluArr)
                 }
 
 
             },
-            render(arr) {
+            render(node) {
                 let template =
                     `
                 <li class="item" "> 
@@ -230,18 +232,18 @@
                 </li>
                 `
                 let $node = $(template);
-                $node.find("img").attr("src", arr.img_url);
-                $node.find("h4").text(arr.short_name);
-                $node.find("p").text(arr.short_intro);
+                $node.find("img").attr("src", node.img_url);
+                $node.find("h4").text(node.short_name);
+                $node.find("p").text(node.short_intro);
                 $("ul.news").append($node);
-                $(window).resize()
+               waterFall.layout($node)
             },
             lazyLoad() {
                 let timer = null;
                 let _this = this
                 $(window).on("scroll", function () {
                     clearTimeout(timer);
-                    if ($("ul")[0].scrollHeight <= $(window).scrollTop() + $(window).height()) {
+                    if ($("ul")[0].scrollHeight-10 <= $(window).scrollTop() + $(window).height()) {
                         timer = setTimeout(function () {
                             console.log("scroll")
                             if (_this.finish === false) {
