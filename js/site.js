@@ -44,7 +44,7 @@ let waterFall = {
 
         $("ul").css("height", maxValue)
         this.coluArr[minIndex] += $node.outerHeight(true)
-
+        $(window).resize();
     },
     min: function (arr) {
         let minValue = arr[0];
