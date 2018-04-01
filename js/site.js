@@ -1,3 +1,11 @@
+var EventCenter = {
+    on: function (type, handler) {
+        $(document).on(type, handler)
+    },
+    fire: function (type, data) {
+        $(document).trigger(type, data)
+    }
+}
 let waterFall = {
     init() {
         this.liWidth = $(".news li").outerWidth(true)
@@ -6,6 +14,7 @@ let waterFall = {
         for (let i = 0; i < this.coluCount; i++) {
             this.coluArr.push(0)
         }
+        // this.li = []
         this.bind();
     },
     bind: function () {
@@ -16,7 +25,18 @@ let waterFall = {
         //     })
 
         // })
+        // EventCenter.on("append",(e,data)=>{
+        //     this.li.push(data.node)
+        // })
+        // EventCenter.on("endGet", () =>{
+        //     console.log("end")
+        //     this.li.forEach(function(n){
+                
+        //            _this.layout(n);
+                   
+        //     })
 
+        // })
         $(window).on("resize", function () {
             let timer = null;
             clearTimeout(timer);
@@ -29,6 +49,8 @@ let waterFall = {
                 $(".news li").each(function () {
                     _this.layout($(this))
                 })
+                $("ul").css("height",Math.max(...waterFall.coluArr))
+                $(".news li").fadeIn()
             }, 500)
 
         })
@@ -42,9 +64,7 @@ let waterFall = {
             left: minIndex * this.liWidth
         })
 
-        $("ul").css("height", maxValue)
         this.coluArr[minIndex] += $node.outerHeight(true)
-        $(window).resize();
     },
     min: function (arr) {
         let minValue = arr[0];
@@ -73,18 +93,15 @@ let getData = {
     init: function () {
         this.count = 20;
         this.currentPage = 0;
-        this.total = 41;
-        this.finish = false;
-        waterFall.init()
         this.bind()
         
     },
     bind() {
+        let _this = this
         this.get();
-        this.lazyLoad()
+        $(".more").on("click",this.get.bind(getData))
     },
     get() {
-        if ($("li").length <= this.total) {
             let _this = this
             $.ajax({
                 url: "https://platform.sina.com.cn/slide/album_tech",
@@ -97,28 +114,16 @@ let getData = {
                 }
             }).done(function (ret) {
                 ret.data.forEach(function (node) {
-                    _this.render(node)
+                    _this.render(node);
                 })
+                $(window).resize();
+                
+
                 _this.currentPage++;
-                $(".waterFall>div").hide("slow");
-                console.log("ajax")
+                
             }).fail(function () {
-                console.log("fail")
             })
-        } else {
-            this.finish = true;
-            $(".waterFall>div").hide("slow");
-            $(".noMore").fadeIn();
-            $(".noMore").css({
-                display:'block',
-                margin:'0 auto'
-            })
-            $("ul").css("height", waterFall.min(waterFall.coluArr).maxValue)
-            console.log(waterFall.min(waterFall.coluArr).maxValue)
-            console.log(waterFall.coluArr)
-        }
-
-
+                
     },
     render(node) {
         let template =
@@ -135,30 +140,17 @@ let getData = {
         $node.find("img").attr("src", node.img_url);
         $node.find("h4").text(node.short_name);
         $node.find("p").text(node.short_intro);
-        $("ul.news").append($node);
-       waterFall.layout($node);
-       $(window).resize();
+        $node.css("display","none");
+        $(".news").append($node)
+
     },
     lazyLoad() {
         let timer = null;
         let _this = this
-        $(window).on("scroll", function () {
-            clearTimeout(timer);
-            if ($("ul")[0].scrollHeight-50 <= $(window).scrollTop() + $(window).height()) {
-                timer = setTimeout(function () {
-                    console.log("scroll")
-                    if (_this.finish === false) {
-                        $(".waterFall>div").fadeIn();
-                        _this.get();
-                    }else{
-                        console.log("over")
-                    }
-
-
-                }, 500)
-            }
-        })
+   
     },
 
 }
+waterFall.init()
 getData.init()
+
